@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/shims/next-link";
 import { MerchItem } from "@/data/merch";
 import { playCartSound, playCyberBeep } from "@/lib/merch-audio";
 

@@ -1,3 +1,4 @@
+/// <reference types="vite/client" />
 import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 import fallbackWins from "@/data/wins";
 
@@ -9,6 +10,18 @@ export interface WinItem {
   displayDate: string;
   sortDate: string;
   images: string[];
+}
+
+const localPhotoModules = import.meta.glob(
+  "../../public/photos/*/*.{jpg,jpeg,png,webp,JPG,JPEG,PNG,WEBP}",
+  { eager: false }
+);
+
+function getLocalWinImages(winId: string): string[] {
+  const prefix = `../../public/photos/${winId}/`;
+  return Object.keys(localPhotoModules)
+    .filter((key) => key.startsWith(prefix))
+    .map((key) => `/photos/${winId}/${key.slice(prefix.length)}`);
 }
 
 export async function getWins(): Promise<WinItem[]> {
@@ -35,24 +48,8 @@ export async function getWins(): Promise<WinItem[]> {
     }
   }
 
-  // Safe isomorphic fallback
-  return fallbackWins.map((win) => {
-    let images: string[] = [];
-    try {
-      if (typeof window === "undefined") {
-        const fs = require("fs");
-        const path = require("path");
-        const dir = path.join(process.cwd(), "public", "photos", win.id);
-        if (fs.existsSync(dir)) {
-          images = fs
-            .readdirSync(dir)
-            .filter((f: string) => /\.(jpg|jpeg|png|webp)$/i.test(f))
-            .map((f: string) => `/photos/${win.id}/${f}`);
-        }
-      }
-    } catch {
-      // Safe fallback if filesystem is unavailable in edge/browser context
-    }
-    return { ...win, images };
-  });
+  return fallbackWins.map((win) => ({
+    ...win,
+    images: getLocalWinImages(win.id),
+  }));
 }

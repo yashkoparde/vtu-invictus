@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/shims/next-link";
 import { ArrowLeft } from "lucide-react";
 import { IdeathonsHero3D } from "@/components/three/IdeathonsHero3D";
 import { ScrollScrubText } from "@/components/motion/AppleScrollScrub";

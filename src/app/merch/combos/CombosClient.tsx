@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import Link from "@/shims/next-link";
+import { useRouter } from "@/shims/next-navigation";
 import { MERCH_COMBOS, MerchComboTemplate, comboToMerchItem } from "@/data/combos";
 import { MERCH_ITEMS } from "@/data/merch";
 import { ScrollComboPackStage } from "@/components/merch/ScrollComboPackStage";

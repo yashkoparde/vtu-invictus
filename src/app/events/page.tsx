@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import Link from "next/link";
+import Link from "@/shims/next-link";
 import { ArrowLeft, ArrowUpRight, Calendar, MapPin, Users } from "lucide-react";
 import staticEventsData, { EventItem } from "@/data/events";
 import { getEvents } from "@/lib/events-service";

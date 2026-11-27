@@ -1,10 +1,15 @@
 @import "tailwindcss";
 
-:root {
+.vtu-invictus-root {
   --background: #000000;
   --foreground: #FFFFFF;
   --invictus-yellow: #FFD60A;
   --invictus-red: #D90429;
+  color: var(--foreground);
+  background: var(--background);
+  font-family: 'Inter', sans-serif;
+  overflow-x: clip;
+  min-height: 100vh;
 }
 
 html.lenis, html.lenis body {
@@ -31,13 +36,7 @@ html {
   overflow-x: clip;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Inter', sans-serif;
-  overflow-x: clip;
-  min-height: 100vh;
-}
+/* Invictus body styles are applied via .vtu-invictus-root */
 
 /* Hide scrollbar for clean editorial look */
 ::-webkit-scrollbar {

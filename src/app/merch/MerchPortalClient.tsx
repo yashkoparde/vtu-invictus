@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
+import Link from "@/shims/next-link";
 import { MERCH_ITEMS, MerchItem } from "@/data/merch";
 import { MERCH_COMBOS, comboToMerchItem } from "@/data/combos";
 import { ScrollSequenceCanvas } from "@/components/merch/ScrollSequenceCanvas";

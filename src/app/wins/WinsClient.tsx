@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import Link from "next/link";
+import Link from "@/shims/next-link";
 import { ArrowLeft, ArrowRight, Trophy } from "lucide-react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Environment, Float, TorusKnot, Wireframe, MeshWobbleMaterial } from "@react-three/drei";

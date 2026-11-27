@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/shims/next-link";
 import { ArrowRight } from "lucide-react";
 
 const opportunities = [

@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import Image from "@/shims/next-image";
+import Link from "@/shims/next-link";
 import { MERCH_COMBOS, MerchComboTemplate } from "@/data/combos";
 import { playCartSound, playCyberBeep } from "@/lib/merch-audio";
 

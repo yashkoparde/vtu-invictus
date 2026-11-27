@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef, useEffect, useState, useMemo } from "react";
-import Link from "next/link";
+import Link from "@/shims/next-link";
 import { motion } from "framer-motion";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";

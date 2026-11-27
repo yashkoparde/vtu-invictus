@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/shims/next-link";
 import { ArrowLeft, ArrowRight, MessageSquare, ArrowUpRight } from "lucide-react";
 import { OPPORTUNITIES_LIST } from "./OpportunitiesNav";
 
