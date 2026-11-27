@@ -40,6 +40,23 @@ export default function VtuInvictusApp() {
   }, [location.pathname])
 
   useEffect(() => {
+    const prevScrollBehavior = document.documentElement.style.scrollBehavior
+    const prevHtmlBg = document.documentElement.style.backgroundColor
+    const prevBodyOverflowX = document.body.style.overflowX
+    const prevBodyBg = document.body.style.backgroundColor
+    document.documentElement.style.scrollBehavior = 'auto'
+    document.documentElement.style.backgroundColor = '#000000'
+    document.body.style.overflowX = 'clip'
+    document.body.style.backgroundColor = '#000000'
+    return () => {
+      document.documentElement.style.scrollBehavior = prevScrollBehavior
+      document.documentElement.style.backgroundColor = prevHtmlBg
+      document.body.style.overflowX = prevBodyOverflowX
+      document.body.style.backgroundColor = prevBodyBg
+    }
+  }, [])
+
+  useEffect(() => {
     if (!location.hash) {
       window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior })
     }

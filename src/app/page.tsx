@@ -8,7 +8,7 @@ import { Canvas, useFrame } from "@react-three/fiber";
 import { Points, PointMaterial } from "@react-three/drei";
 import * as THREE from "three";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { ArrowRight, ChevronRight, Menu, X, User } from "lucide-react";
 import Lenis from "lenis";
@@ -196,7 +196,12 @@ export default function PremiumInvictus() {
     gsap.ticker.add(tickerUpdate);
     gsap.ticker.lagSmoothing(0, 0);
 
+    const refreshTimer = setTimeout(() => {
+      ScrollTrigger.refresh();
+    }, 250);
+
     return () => {
+      clearTimeout(refreshTimer);
       lenis.destroy();
       gsap.ticker.remove(tickerUpdate);
       ScrollTrigger.refresh();
