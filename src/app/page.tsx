@@ -1,0 +1,937 @@
+/* eslint-disable @next/next/no-img-element, jsx-a11y/alt-text */
+"use client";
+
+import { useRef, useEffect, useState, useMemo } from "react";
+import Link from "next/link";
+import { motion } from "framer-motion";
+import { Canvas, useFrame } from "@react-three/fiber";
+import { Points, PointMaterial } from "@react-three/drei";
+import * as THREE from "three";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/dist/ScrollTrigger";
+import { useGSAP } from "@gsap/react";
+import { ArrowRight, ChevronRight, Menu, X, User } from "lucide-react";
+import Lenis from "lenis";
+import winsData from "@/data/wins";
+import eventsData from "@/data/events";
+import { InteractiveEventCalendar } from "@/components/events/InteractiveEventCalendar";
+
+// Register GSAP plugins
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+}
+
+// ----------------------------------------------------
+// 3D HERO BACKGROUND (Abstract wireframe/particles)
+// ----------------------------------------------------
+function ParticleNetwork() {
+  const ref = useRef<THREE.Points>(null);
+  const count = 1500;
+  
+  // Generate random points in a sphere
+  const positions = useMemo(() => {
+    const arr = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      const rand1 = Math.abs(Math.sin(i * 12.9898)) % 1;
+      const rand2 = Math.abs(Math.sin(i * 78.233)) % 1;
+      const rand3 = Math.abs(Math.sin(i * 45.123)) % 1;
+      
+      const r = 20 * Math.cbrt(rand1);
+      const theta = rand2 * 2 * Math.PI;
+      const phi = Math.acos(2 * rand3 - 1);
+      arr[i * 3] = r * Math.sin(phi) * Math.cos(theta);
+      arr[i * 3 + 1] = r * Math.sin(phi) * Math.sin(theta);
+      arr[i * 3 + 2] = r * Math.cos(phi);
+    }
+    return arr;
+  }, [count]);
+
+  useFrame((state) => {
+    if (!ref.current) return;
+    ref.current.rotation.y = state.clock.getElapsedTime() * 0.05;
+    ref.current.rotation.x = state.clock.getElapsedTime() * 0.02;
+  });
+
+  return (
+    <Points ref={ref} positions={positions} stride={3} frustumCulled={false}>
+      <PointMaterial transparent color="#FFD60A" size={0.05} sizeAttenuation={true} depthWrite={false} opacity={0.6} />
+    </Points>
+  );
+}
+
+function Hero3D() {
+  return (
+    <div className="absolute inset-0 z-0 bg-black pointer-events-none">
+      <Canvas camera={{ position: [0, 0, 15] }}>
+        <fog attach="fog" args={["#000000", 10, 25]} />
+        <ParticleNetwork />
+      </Canvas>
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
+    </div>
+  );
+}
+
+// ----------------------------------------------------
+// NAVIGATION
+// ----------------------------------------------------
+function Navbar() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  return (
+    <>
+      <nav className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 py-6 mix-blend-difference text-white">
+        <Link href="/" className="font-bold tracking-widest text-lg hover:text-[#FFD60A] transition-colors">INVICTUS</Link>
+        <div className="hidden md:flex gap-8 text-xs font-semibold tracking-widest">
+          <Link href="#about-showcase" className="hover:text-[#FFD60A] transition-colors">ABOUT</Link>
+          <Link href="#opportunities" className="hover:text-[#FFD60A] transition-colors">OPPORTUNITIES</Link>
+          <Link href="#events" className="hover:text-[#FFD60A] transition-colors">EVENTS</Link>
+          <Link href="/wins" className="hover:text-[#FFD60A] transition-colors">ACHIEVEMENTS</Link>
+          <Link href="/merch" className="hover:text-[#FFD60A] transition-colors flex items-center gap-1.5 font-bold">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#FFD60A] animate-pulse"></span>
+            MERCH
+          </Link>
+        </div>
+        <div className="flex items-center gap-4">
+          <button 
+            type="button" 
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-label="Toggle navigation menu"
+            className="md:hidden p-1 text-white hover:text-[#FFD60A] transition-colors focus:outline-none"
+          >
+            {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+          </button>
+        </div>
+      </nav>
+
+      {/* Responsive Mobile Drawer */}
+      {mobileMenuOpen && (
+        <div className="fixed inset-0 z-40 bg-black/95 backdrop-blur-xl flex flex-col justify-between px-6 py-24 md:hidden">
+          <div className="flex flex-col gap-6 text-base sm:text-lg font-bold tracking-widest uppercase">
+            <Link 
+              href="#about-showcase" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 border-b border-gray-900 hover:text-[#FFD60A] transition-colors"
+            >
+              ABOUT
+            </Link>
+            <Link 
+              href="#opportunities" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 border-b border-gray-900 hover:text-[#FFD60A] transition-colors"
+            >
+              OPPORTUNITIES
+            </Link>
+            <Link 
+              href="#events" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 border-b border-gray-900 hover:text-[#FFD60A] transition-colors"
+            >
+              EVENTS
+            </Link>
+            <Link 
+              href="/wins" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 border-b border-gray-900 hover:text-[#FFD60A] transition-colors flex items-center justify-between"
+            >
+              <span>ACHIEVEMENTS</span>
+              <span className="text-[10px] bg-white/10 text-zinc-300 px-2 py-0.5 rounded-full border border-white/20 font-mono">HALL OF FAME</span>
+            </Link>
+            <Link 
+              href="/merch" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 border-b border-gray-900 text-[#FFD60A] hover:text-white transition-colors flex items-center justify-between"
+            >
+              <span>OFFICIAL MERCH PORTAL</span>
+              <span className="text-[10px] bg-[#FFD60A]/20 text-[#FFD60A] px-2 py-0.5 rounded-full border border-[#FFD60A]/40 font-mono">NEW</span>
+            </Link>
+          </div>
+
+          <div className="pt-8 flex flex-col gap-3">
+            <Link 
+              href="#opportunities" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="w-full text-center bg-[#FFD60A] text-black py-3.5 text-xs font-bold tracking-widest hover:bg-white transition-colors uppercase"
+            >
+              EXPLORE OPPORTUNITIES
+            </Link>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+// ----------------------------------------------------
+// PAGE COMPONENT
+// ----------------------------------------------------
+export default function PremiumInvictus() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 1,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      orientation: 'vertical',
+      gestureOrientation: 'vertical',
+      smoothWheel: true,
+      wheelMultiplier: 1,
+      touchMultiplier: 1.5,
+    });
+
+    // Auto-scroll to hash if present (fixes returning to #opportunities)
+    if (window.location.hash) {
+      setTimeout(() => {
+        const target = document.querySelector(window.location.hash) as HTMLElement | null;
+        if (target) {
+          lenis.scrollTo(target, { immediate: true });
+        }
+      }, 100);
+    }
+
+    // Connect Lenis to ScrollTrigger and GSAP ticker
+    lenis.on('scroll', ScrollTrigger.update);
+    const tickerUpdate = (time: number) => {
+      lenis.raf(time * 1000);
+    };
+    gsap.ticker.add(tickerUpdate);
+    gsap.ticker.lagSmoothing(0, 0);
+
+    return () => {
+      lenis.destroy();
+      gsap.ticker.remove(tickerUpdate);
+      ScrollTrigger.refresh();
+    };
+  }, []);
+  
+  useGSAP(() => {
+    // Cinematic Showcase Animation 1
+    const showcaseTl1 = gsap.timeline({
+      scrollTrigger: {
+        trigger: "#culture-1",
+        start: "top top",
+        end: "bottom top",
+        scrub: 1,
+        pin: true
+      }
+    });
+
+    showcaseTl1
+      .to("#culture-1 .drone-shot", { scale: 1.2, opacity: 0.8, ease: "none" }, 0)
+      .fromTo("#culture-1 .center-element", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, ease: "power2.out" }, 0)
+      .fromTo("#culture-1 .float-img-1", { y: "50vh", rotation: -15, scale: 0.8 }, { y: "-20vh", rotation: 5, scale: 1.1, ease: "none" }, 0)
+      .fromTo("#culture-1 .float-img-2", { y: "60vh", rotation: 10, scale: 0.9 }, { y: "-30vh", rotation: -5, scale: 1.2, ease: "none" }, 0)
+      .fromTo("#culture-1 .float-img-3", { x: -100, y: "40vh", rotation: -20 }, { x: 50, y: "-10vh", rotation: 10, ease: "none" }, 0)
+      .fromTo("#culture-1 .float-img-4", { x: 100, y: "50vh", rotation: 20 }, { x: -50, y: "-15vh", rotation: -10, ease: "none" }, 0);
+
+    // Cinematic Showcase Animation 2
+    const showcaseTl2 = gsap.timeline({
+      scrollTrigger: {
+        trigger: "#culture-2",
+        start: "top top",
+        end: "bottom top",
+        scrub: 1,
+        pin: true
+      }
+    });
+
+    showcaseTl2
+      .to("#culture-2 .drone-shot-2", { scale: 1.2, opacity: 0.8, ease: "none" }, 0)
+      .fromTo("#culture-2 .center-element-2", { scale: 0.5, opacity: 0 }, { scale: 1, opacity: 1, ease: "power2.out" }, 0)
+      .fromTo("#culture-2 .float-img-2-1", { y: "50vh", rotation: 15, scale: 0.8 }, { y: "-20vh", rotation: -5, scale: 1.1, ease: "none" }, 0)
+      .fromTo("#culture-2 .float-img-2-2", { y: "60vh", rotation: -10, scale: 0.9 }, { y: "-30vh", rotation: 5, scale: 1.2, ease: "none" }, 0)
+      .fromTo("#culture-2 .float-img-2-3", { x: 100, y: "40vh", rotation: 20 }, { x: -50, y: "-10vh", rotation: -10, ease: "none" }, 0)
+      .fromTo("#culture-2 .float-img-2-4", { x: -100, y: "50vh", rotation: -20 }, { x: 50, y: "-15vh", rotation: 10, ease: "none" }, 0);
+
+    // Element by Element Stagger Animations for Events and Achievements
+    gsap.fromTo(".event-item", 
+      { opacity: 0, x: -50 },
+      {
+        opacity: 1,
+        x: 0,
+        duration: 0.4,
+        stagger: 0.05,
+        scrollTrigger: {
+          trigger: "#events",
+          start: "top 80%",
+        }
+      }
+    );
+
+    gsap.fromTo(".achievement-item", 
+      { opacity: 0, y: 30 },
+      {
+        opacity: 1,
+        y: 0,
+        duration: 0.5,
+        stagger: 0.05,
+        scrollTrigger: {
+          trigger: "#achievements",
+          start: "top 80%",
+        }
+      }
+    );
+
+    // Smooth, elegant entrance for Editorial Panels
+    gsap.fromTo(".warp-panel", 
+      { y: 50, opacity: 0 },
+      {
+        y: 0,
+        opacity: 1,
+        duration: 1,
+        stagger: 0.15,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: "#editorial",
+          start: "top 75%",
+        }
+      }
+    );
+
+    // Pinned How it works
+    ScrollTrigger.create({
+      trigger: ".pinned-container",
+      start: "top top",
+      end: "+=300%",
+      pin: true,
+      animation: gsap.to(".pinned-content", {
+        xPercent: -75,
+        ease: "none"
+      }),
+      scrub: 1
+    });
+
+    // Phonk Style Edit Card Reveal
+    gsap.fromTo(".opportunity-card", 
+      { scale: 1.1, opacity: 0, rotationZ: 5, filter: "brightness(2) contrast(1.5)" },
+      { 
+        scale: 1, 
+        opacity: 1, 
+        rotationZ: 0,
+        filter: "brightness(1) contrast(1)",
+        duration: 0.5, 
+        stagger: 0.1, 
+        ease: "expo.out", 
+        scrollTrigger: { trigger: "#opportunities", start: "top 70%" } 
+      }
+    );
+
+    // INSANE PREMIUM LEADERSHIP REVEAL
+    const leadTl = gsap.timeline({
+      scrollTrigger: {
+        trigger: ".lead-section",
+        start: "top 75%",
+      }
+    });
+
+    gsap.utils.toArray<HTMLElement>(".lead-character").forEach((char, i) => {
+      const curtain = char.querySelector(".curtain");
+      const img = char.querySelector(".lead-img");
+      const chars = char.querySelectorAll(".insane-char");
+      const pos = char.querySelector(".insane-pos");
+      
+      // Curtain slides away vertically
+      leadTl.fromTo(curtain, 
+        { scaleY: 1, transformOrigin: "bottom" }, 
+        { scaleY: 0, duration: 1.2, ease: "expo.inOut" }, 
+        i * 0.3
+      );
+
+      // Image zooms out elegantly
+      leadTl.fromTo(img, 
+        { scale: 1.5, filter: "brightness(0.5) contrast(1.2)" }, 
+        { scale: 1, filter: "brightness(1) contrast(1)", duration: 2, ease: "power3.out" }, 
+        i * 0.3 + 0.4
+      );
+
+      // Position text slides up from clipping mask
+      leadTl.fromTo(pos, 
+        { y: "100%" }, 
+        { y: "0%", duration: 0.8, ease: "expo.out" }, 
+        i * 0.3 + 0.8
+      );
+
+      // Name characters fly in with 3D rotation and extreme back-easing
+      if (chars.length > 0) {
+        leadTl.fromTo(chars, 
+          { y: 50, opacity: 0, rotationX: -90, scale: 0.5 }, 
+          { y: 0, opacity: 1, rotationX: 0, scale: 1, duration: 0.8, stagger: 0.04, ease: "back.out(2)" }, 
+          i * 0.3 + 0.9
+        );
+      }
+    });
+
+    // Team Members Entrance and Drone Shot Animation
+    gsap.fromTo(".team-member", 
+      { opacity: 0, y: 30, scale: 0.95 },
+      {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 0.6,
+        stagger: 0.1,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".team-member",
+          start: "top 85%",
+        }
+      }
+    );
+    
+    gsap.utils.toArray<HTMLElement>(".team-drone-shot").forEach((shot) => {
+      gsap.to(shot, {
+        scale: 1.2,
+        ease: "none",
+        scrollTrigger: {
+          trigger: shot.parentElement,
+          start: "top bottom",
+          end: "bottom top",
+          scrub: true
+        }
+      });
+    });
+
+  }, { scope: containerRef });
+
+  // ----------------------------------------------------
+  // TEAM DATA (Store images in public/team/)
+  // ----------------------------------------------------
+  const teamData = [
+    { name: "Mrs. Chaitrali Mam", position: "Faculty Advisor", image: "/team/chaitrali-mam.jpg", type: "lead" },
+    { name: "Yash Koparde", position: "President", image: "/team/yash-koparde.jpeg", type: "normal" },
+    { name: "Rahul Shirol", position: "Vice President", image: "/team/rahul-shirol.png", type: "normal" },
+    { name: "Preetam Malawade", position: "General Secretary", image: "/team/preetam-malawade.jpg", type: "normal" },
+    { name: "Pratik", position: "Event Lead", image: "/team/pratik.png", type: "normal" },
+    { name: "Shruti Hugar", position: "Event Lead", image: "", type: "normal" },
+    { name: "Melwin Fernandes", position: "Tech Lead", image: "/team/melwin-fernandes.jpg", type: "normal" },
+    { name: "Aditya Patange", position: "Tech Lead", image: "/team/aditya-patange.jpg", type: "normal" },
+    { name: "Shreesha Desai", position: "Hardware Lead", image: "/team/shreesha-desai.png", type: "normal" },
+    { name: "Sagar Hulikavi", position: "Event Operations", image: "/team/sagar-hulikavi.jpg", type: "normal" },
+    { name: "Nandita Salunke", position: "Event Operations", image: "/team/nandita-salunke.png", type: "normal" },
+    { name: "Advika Gurav", position: "Female Lead", image: "/team/advika-gurav.jpg", type: "normal" },
+    { name: "Nandita Bhajantri", position: "PR Outreach", image: "", type: "normal" },
+    { name: "Laxmikanth J", position: "Cinematography", image: "/team/laxmikanth-j.jpg", type: "normal" },
+    { name: "Rashmi", position: "Core Team", image: "/team/rashmi.jpg", type: "normal" },
+    { name: "Suvarna", position: "Core Team", image: "/team/suvarna-basanakatti.png", type: "normal" },
+    { name: "Harsha Oulkar", position: "Core Team", image: "/team/harsha-oulkar.jpg", type: "normal" },
+    { name: "Ravikumar Pujari", position: "Core Team", image: "/team/ravikumar-pujari.png", type: "normal" },
+    { name: "Rehan", position: "Core Team", image: "/team/rehan.jpg", type: "normal" }
+  ];
+
+  return (
+    <main ref={containerRef} className="bg-black min-h-screen text-white selection:bg-[#FFD60A] selection:text-black font-sans overflow-clip">
+      <Navbar />
+
+      {/* 1. HERO SECTION */}
+      <section className="relative min-h-screen flex flex-col justify-center px-6 md:px-16 pt-24 pb-16">
+        <Hero3D />
+        
+        <div className="relative z-10 flex flex-col items-start gap-3 sm:gap-4 max-w-5xl">
+          <div className="text-[10px] sm:text-xs font-bold tracking-[0.25em] sm:tracking-[0.3em] uppercase text-[#FFD60A]">
+            VTU • COMPETITION & INNOVATION
+          </div>
+          
+          <h1 className="text-5xl sm:text-8xl lg:text-[12rem] font-black tracking-tighter leading-[0.9] sm:leading-[0.85] text-white break-words">
+            INVICTUS
+          </h1>
+          
+          <p className="text-lg sm:text-2xl md:text-3xl font-light text-gray-300 tracking-tight max-w-2xl mt-2 sm:mt-4">
+            Learn, build, compete and grow together.
+          </p>
+          
+          <p className="text-xs sm:text-sm md:text-base text-gray-400 sm:text-gray-500 max-w-xl font-medium leading-relaxed mt-2 sm:mt-4">
+            A student-led initiative connecting VTU students to competitions, teams, innovation, and opportunities beyond their campus.
+          </p>
+          
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 mt-8 sm:mt-12 w-full sm:w-auto">
+            <Link href="#about-showcase" className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto justify-center bg-[#FFD60A] text-black px-8 py-4 text-xs sm:text-sm font-bold tracking-widest hover:bg-white transition-all flex items-center gap-2">
+                EXPLORE INVICTUS <ArrowRight size={16} />
+              </button>
+            </Link>
+            <Link href="#opportunities" className="w-full sm:w-auto">
+              <button className="w-full sm:w-auto justify-center bg-transparent border border-gray-700 text-white px-8 py-4 text-xs sm:text-sm font-bold tracking-widest hover:border-white transition-all">
+                VIEW OPPORTUNITIES
+              </button>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 2. CINEMATIC SHOWCASE - SCENE 1 */}
+      <section id="culture-1" className="relative h-screen bg-black overflow-hidden flex flex-col items-center justify-center">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/culture-pics/1st-main-background(bg1).png" 
+            alt="Culture Background 1" 
+            className="w-full h-full object-cover opacity-30 drone-shot origin-center" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+        </div>
+        
+        <div className="z-10 relative flex items-center justify-center w-full h-full">
+          <div className="absolute z-10 center-element text-center px-4 pointer-events-none">
+            <h2 className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter uppercase text-white mix-blend-overlay drop-shadow-2xl">
+              THE CULTURE
+            </h2>
+            <p className="text-[#FFD60A] tracking-[0.3em] sm:tracking-[0.4em] font-bold mt-2 sm:mt-4 uppercase text-xs sm:text-sm">Beyond The Campus</p>
+          </div>
+          
+          {/* Floating Image Elements */}
+          <img src="/culture-pics/bg1-img1.png" className="absolute w-24 h-36 sm:w-40 sm:h-56 md:w-64 md:h-80 object-cover float-img-1 rounded-2xl shadow-[0_0_40px_rgba(255,214,10,0.25)] z-20 border border-white/10" style={{ left: '5%', top: '20%' }} />
+          <img src="/culture-pics/bg1-img2.png" className="absolute w-28 h-40 sm:w-48 sm:h-64 md:w-72 md:h-96 object-cover float-img-2 rounded-2xl shadow-[0_0_40px_rgba(255,214,10,0.25)] z-20 border border-white/10" style={{ right: '5%', top: '15%' }} />
+          <img src="/culture-pics/bg1-img3.png" className="absolute w-32 h-24 sm:w-56 sm:h-40 md:w-80 md:h-64 object-cover float-img-3 rounded-2xl shadow-[0_0_40px_rgba(255,214,10,0.25)] z-20 border border-white/10" style={{ left: '12%', bottom: '15%' }} />
+          <img src="/culture-pics/bg1-img4.png" className="absolute w-24 h-24 sm:w-40 sm:h-40 md:w-56 md:h-56 object-cover float-img-4 rounded-2xl shadow-[0_0_40px_rgba(255,214,10,0.25)] z-20 border border-white/10" style={{ right: '12%', bottom: '10%' }} />
+        </div>
+      </section>
+
+      {/* 2.5 CINEMATIC SHOWCASE - SCENE 2 */}
+      <section id="culture-2" className="relative h-screen bg-black overflow-hidden flex flex-col items-center justify-center">
+        <div className="absolute inset-0 z-0">
+          <img 
+            src="/culture-pics/2nd-main-background(bg2).png" 
+            alt="Culture Background 2" 
+            className="w-full h-full object-cover opacity-30 drone-shot-2 origin-center" 
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black" />
+        </div>
+        
+        <div className="z-10 relative flex items-center justify-center w-full h-full">
+          <div className="absolute z-10 center-element-2 text-center px-4 pointer-events-none">
+            <h2 className="text-4xl sm:text-6xl md:text-8xl lg:text-[10rem] font-black tracking-tighter uppercase text-white mix-blend-overlay drop-shadow-2xl">
+              THE VISION
+            </h2>
+            <p className="text-[#FFD60A] tracking-[0.3em] sm:tracking-[0.4em] font-bold mt-2 sm:mt-4 uppercase text-xs sm:text-sm">Building The Future</p>
+          </div>
+          
+          {/* Floating Image Elements */}
+          <img src="/culture-pics/bg2-img1.png" className="absolute w-24 h-36 sm:w-40 sm:h-56 md:w-64 md:h-80 object-cover float-img-2-1 rounded-2xl shadow-[0_0_40px_rgba(255,214,10,0.25)] z-20 border border-white/10" style={{ right: '10%', top: '25%' }} />
+          <img src="/culture-pics/bg2-img2.png" className="absolute w-28 h-40 sm:w-48 sm:h-64 md:w-72 md:h-96 object-cover float-img-2-2 rounded-2xl shadow-[0_0_40px_rgba(255,214,10,0.25)] z-20 border border-white/10" style={{ left: '10%', top: '10%' }} />
+          <img src="/culture-pics/bg2-img3.png" className="absolute w-32 h-24 sm:w-56 sm:h-40 md:w-80 md:h-64 object-cover float-img-2-3 rounded-2xl shadow-[0_0_40px_rgba(255,214,10,0.25)] z-20 border border-white/10" style={{ right: '15%', bottom: '15%' }} />
+          <img src="/culture-pics/bg2-img4.png" className="absolute w-24 h-24 sm:w-40 sm:h-40 md:w-56 md:h-56 object-cover float-img-2-4 rounded-2xl shadow-[0_0_40px_rgba(255,214,10,0.25)] z-20 border border-white/10" style={{ left: '15%', bottom: '20%' }} />
+        </div>
+      </section>
+
+      {/* 3. WHAT INVICTUS DOES (Editorial Panels) */}
+      <section id="editorial" className="grid grid-cols-1 md:grid-cols-2 border-y border-gray-800 bg-black relative">
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FFD60A]/5 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-1000 pointer-events-none z-0" />
+        
+        <div className="warp-panel border-b md:border-b-0 md:border-r border-gray-800 p-8 sm:p-12 md:p-20 group hover:bg-white/5 transition-colors relative z-10">
+          <span className="text-xs font-bold text-[#FFD60A] tracking-widest mb-6 sm:mb-8 block">01 / FIND</span>
+          <h3 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tighter leading-tight text-white mb-4 sm:mb-6">
+            <AnimatedText text="Discover hackathons, ideathons, and innovation events." />
+          </h3>
+        </div>
+        <div className="warp-panel border-b md:border-b-0 p-8 sm:p-12 md:p-20 group hover:bg-white/5 transition-colors relative z-10">
+          <span className="text-xs font-bold text-[#D90429] tracking-widest mb-6 sm:mb-8 block">02 / BUILD</span>
+          <h3 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tighter leading-tight text-white mb-4 sm:mb-6">
+            <AnimatedText text="Find teammates based on skills, interests, and availability." />
+          </h3>
+        </div>
+        <div className="warp-panel border-b md:border-b-0 md:border-r border-t md:border-t-0 border-gray-800 p-8 sm:p-12 md:p-20 group hover:bg-white/5 transition-colors relative z-10">
+          <span className="text-xs font-bold text-gray-500 tracking-widest mb-6 sm:mb-8 block">03 / COMPETE</span>
+          <h3 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tighter leading-tight text-white mb-4 sm:mb-6">
+            <AnimatedText text="Prepare, build, present and compete at premier events." />
+          </h3>
+        </div>
+        <div className="warp-panel border-t border-gray-800 p-8 sm:p-12 md:p-20 group hover:bg-white/5 transition-colors relative z-10">
+          <span className="text-xs font-bold text-white tracking-widest mb-6 sm:mb-8 block">04 / REPRESENT</span>
+          <h3 className="text-2xl sm:text-3xl md:text-5xl font-black tracking-tighter leading-tight text-white mb-4 sm:mb-6">
+            <AnimatedText text="Represent your team, your campus, and the wider VTU community." />
+          </h3>
+        </div>
+      </section>
+
+      {/* 5. OPPORTUNITIES (Highlighted + Grid) */}
+      <section id="opportunities" className="py-20 sm:py-32 bg-[#050505]">
+        <div className="px-6 md:px-16 mb-12 sm:mb-16 flex items-end justify-between max-w-7xl mx-auto">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter uppercase">Opportunities</h2>
+          <Link href="/events" className="flex items-center gap-2 text-xs sm:text-sm font-bold tracking-widest hover:text-[#FFD60A] transition-colors">
+            VIEW ALL <ArrowRight size={16} />
+          </Link>
+        </div>
+        
+        <div className="px-6 md:px-16 max-w-7xl mx-auto flex flex-col gap-6 sm:gap-8">
+          {/* Highlighted Large Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+            {[
+              { title: "OFFSITE DEV", desc: "Get out of the city. Ship real code. Zero distractions.", color: "#00FFCC", path: "/offsite-project-dev", img: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?q=80&w=2070&auto=format&fit=crop" },
+              { title: "HACKATHONS", desc: "24 hours to break things and build them better.", color: "#FFD60A", path: "/hackathons", img: "https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=2070&auto=format&fit=crop" }
+            ].map((item, i) => (
+              <Link href={item.path} key={i} className="opportunity-card h-[280px] sm:h-[400px] md:h-[500px] border border-gray-800 p-6 sm:p-8 md:p-10 flex flex-col justify-between group hover:border-gray-500 transition-colors bg-black relative overflow-hidden block cursor-pointer rounded-3xl hover:shadow-[0_0_50px_-10px_rgba(255,255,255,0.1)]">
+                <img src={item.img} alt={item.title} className="absolute inset-0 w-full h-full object-cover opacity-20 group-hover:scale-110 group-hover:opacity-40 transition-all duration-700 mix-blend-luminosity z-0" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent z-10" />
+                <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 blur-[80px] rounded-full group-hover:bg-white/10 transition-all duration-700 z-10" />
+                
+                <div className="relative z-20 flex justify-between items-start">
+                  <span className="text-xs sm:text-sm font-mono text-white/50 bg-black/50 px-3 py-1 backdrop-blur-md rounded-full">FEATURED</span>
+                  <ArrowRight className="text-white/50 group-hover:text-white transform group-hover:-rotate-45 transition-all w-6 h-6 sm:w-8 sm:h-8" />
+                </div>
+                
+                <div className="relative z-20">
+                  <h3 className="text-4xl sm:text-5xl md:text-6xl font-black tracking-tighter mb-2 sm:mb-4 transition-colors drop-shadow-lg" style={{ color: item.color }}>
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-200 font-medium text-base sm:text-lg max-w-sm drop-shadow-md">
+                    {item.desc}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+          
+          {/* Rest of the Independent Cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 mt-4 sm:mt-8">
+            {[
+              { title: "FREELANCE", desc: "Take on client work. Get paid.", color: "#D90429", path: "/freelance-work", img: "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop" },
+              { title: "IDEATHONS", desc: "Pitch raw ideas, defend them.", color: "#FFFFFF", path: "/ideathons", img: "https://images.unsplash.com/photo-1552664730-d307ca884978?q=80&w=2070&auto=format&fit=crop" },
+              { title: "EXPOS", desc: "Show off what you built this semester.", color: "#D90429", path: "/project-contests", img: "https://images.unsplash.com/photo-1531482615713-2afd69097998?q=80&w=2070&auto=format&fit=crop" },
+              { title: "RESEARCH", desc: "Deep dive and publish.", color: "#555555", path: "/research", img: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?q=80&w=2070&auto=format&fit=crop" }
+            ].map((item, i) => (
+              <Link href={item.path} key={i} className="opportunity-card h-[160px] sm:h-[220px] md:h-[250px] border border-gray-800 p-5 sm:p-6 flex flex-col justify-between group hover:border-gray-600 transition-colors bg-black relative overflow-hidden block cursor-pointer rounded-2xl">
+                <img src={item.img} alt={item.title} className="absolute inset-0 w-full h-full object-cover opacity-10 group-hover:scale-110 group-hover:opacity-30 transition-all duration-500 mix-blend-luminosity z-0" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/70 to-transparent z-10" />
+                
+                <div className="relative z-20 flex justify-between items-start">
+                  <span className="text-xs font-mono text-white/40">0{i+3}</span>
+                  <ArrowRight className="text-white/40 group-hover:text-white transform group-hover:-rotate-45 transition-all w-4 h-4" />
+                </div>
+                
+                <div className="relative z-20">
+                  <h3 className="text-xl sm:text-2xl font-black tracking-tighter mb-1.5 sm:mb-2 transition-colors drop-shadow-md" style={{ color: item.color }}>
+                    {item.title}
+                  </h3>
+                  <p className="text-gray-400 font-medium text-xs leading-relaxed group-hover:text-gray-200 transition-colors">
+                    {item.desc}
+                  </p>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. HOW IT WORKS (GSAP Pinned Section with 3D Background) */}
+      <section className="pinned-container h-screen bg-black text-white overflow-hidden relative">
+        <div className="absolute inset-0 z-0 opacity-50">
+          <Canvas camera={{ position: [0, 0, 20], fov: 60 }}>
+            <ambientLight intensity={0.5} />
+            <ParticleNetwork />
+          </Canvas>
+          <div className="absolute inset-0 bg-gradient-to-r from-black via-transparent to-black" />
+        </div>
+        
+        <div className="absolute top-8 sm:top-12 left-6 md:left-16 text-xs font-bold tracking-widest uppercase z-10 mix-blend-difference">
+          HOW IT WORKS
+        </div>
+        <div className="pinned-content flex w-[400vw] h-full items-center relative z-10">
+          
+          <div className="w-[100vw] px-6 sm:px-12 md:px-32 flex flex-col justify-center">
+            <h2 className="text-[6rem] sm:text-[10rem] md:text-[15rem] font-black tracking-tighter text-white/10 leading-none">01</h2>
+            <h3 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter -mt-8 sm:-mt-12 md:-mt-20 relative z-10 text-white">SPOT IT</h3>
+            <p className="text-base sm:text-xl md:text-2xl font-medium mt-4 sm:mt-8 max-w-lg text-gray-400">Find the right hackathon or bounty before anyone else.</p>
+          </div>
+          
+          <div className="w-[100vw] px-6 sm:px-12 md:px-32 flex flex-col justify-center">
+            <h2 className="text-[6rem] sm:text-[10rem] md:text-[15rem] font-black tracking-tighter text-white/10 leading-none">02</h2>
+            <h3 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter -mt-8 sm:-mt-12 md:-mt-20 relative z-10 text-white">SQUAD UP</h3>
+            <p className="text-base sm:text-xl md:text-2xl font-medium mt-4 sm:mt-8 max-w-lg text-gray-400">Pull the best devs and designers from the network.</p>
+          </div>
+          
+          <div className="w-[100vw] px-6 sm:px-12 md:px-32 flex flex-col justify-center">
+            <h2 className="text-[6rem] sm:text-[10rem] md:text-[15rem] font-black tracking-tighter text-[#FFD60A]/20 leading-none">03</h2>
+            <h3 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter -mt-8 sm:-mt-12 md:-mt-20 relative z-10 text-[#D90429]">SHIP</h3>
+            <p className="text-base sm:text-xl md:text-2xl font-medium mt-4 sm:mt-8 max-w-lg text-gray-400">Grind it out. Build something that actually works.</p>
+          </div>
+          
+          <div className="w-[100vw] px-6 sm:px-12 md:px-32 flex flex-col justify-center">
+            <h2 className="text-[6rem] sm:text-[10rem] md:text-[15rem] font-black tracking-tighter text-white/10 leading-none">04</h2>
+            <h3 className="text-4xl sm:text-6xl md:text-8xl font-black tracking-tighter -mt-8 sm:-mt-12 md:-mt-20 relative z-10 text-white">WIN</h3>
+            <p className="text-base sm:text-xl md:text-2xl font-medium mt-4 sm:mt-8 max-w-lg text-gray-400">Take the prize, rep the club, repeat.</p>
+          </div>
+
+        </div>
+      </section>
+
+      {/* 7. ACHIEVEMENTS */}
+      <section id="achievements" className="py-20 sm:py-32 px-6 md:px-16 border-b border-gray-800">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 sm:mb-20">
+          <div>
+            <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold tracking-[0.25em] uppercase text-[#FFD60A] mb-3">
+              <span>ACHIEVEMENTS & VICTORIES</span>
+              <span className="px-2 py-0.5 rounded-full bg-[#FFD60A]/10 border border-[#FFD60A]/30 text-[9px] font-mono text-[#FFD60A]">HALL OF FAME</span>
+            </div>
+            <h2 className="text-5xl sm:text-7xl md:text-[10rem] font-black tracking-tighter uppercase leading-[0.85] sm:leading-[0.8] text-stroke">
+              WE SHOW UP.
+            </h2>
+          </div>
+          <Link
+            href="/wins"
+            className="inline-flex items-center gap-3 px-8 py-4 rounded-full bg-[#FFD60A] text-black font-mono font-black text-xs uppercase tracking-wider hover:brightness-110 transition-all shadow-[0_0_35px_rgba(255,214,10,0.35)] shrink-0 self-start md:self-auto cursor-pointer"
+          >
+            <span>OPEN HALL OF FAME</span>
+            <ArrowRight size={16} />
+          </Link>
+        </div>
+        
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8 md:gap-12 border-b border-gray-800 pb-12 sm:pb-20">
+          <div>
+            <h4 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter">15+</h4>
+            <p className="text-[10px] sm:text-xs font-bold tracking-widest text-gray-500 mt-2 uppercase">Hackathons</p>
+          </div>
+          <div>
+            <h4 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-[#FFD60A]">300+</h4>
+            <p className="text-[10px] sm:text-xs font-bold tracking-widest text-gray-500 mt-2 uppercase">Members</p>
+          </div>
+          <div>
+            <h4 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter">12</h4>
+            <p className="text-[10px] sm:text-xs font-bold tracking-widest text-gray-500 mt-2 uppercase">Victories</p>
+          </div>
+          <div>
+            <h4 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter text-[#D90429]">VTU</h4>
+            <p className="text-[10px] sm:text-xs font-bold tracking-widest text-gray-500 mt-2 uppercase">Network</p>
+          </div>
+        </div>
+
+        {/* Timeline placeholder (Data driven) */}
+        <div className="pt-12 sm:pt-20">
+          <div className="flex items-center justify-between mb-8">
+            <Link href="/wins" className="group flex items-center gap-3">
+              <h3 className="text-xl sm:text-2xl font-bold tracking-tight uppercase group-hover:text-[#FFD60A] transition-colors">
+                Hall of Fame
+              </h3>
+              <span className="text-xs font-mono text-[#FFD60A] opacity-0 group-hover:opacity-100 transition-opacity">↗</span>
+            </Link>
+            <Link href="/wins" className="text-xs sm:text-sm font-bold tracking-widest hover:text-[#FFD60A] transition-colors flex items-center gap-2">
+              SEE ALL <ArrowRight size={16} />
+            </Link>
+          </div>
+          <div className="space-y-4 sm:space-y-6">
+            {winsData
+              .sort((a, b) => new Date(b.sortDate).getTime() - new Date(a.sortDate).getTime())
+              .slice(0, 3)
+              .map((win, i) => (
+              <Link href={`/wins`} key={i} className="achievement-item flex flex-col md:flex-row gap-4 sm:gap-6 border border-gray-800 p-6 md:p-8 bg-black hover:bg-[#0a0a0a] transition-all duration-500 group cursor-pointer relative overflow-hidden rounded-xl hover:shadow-[0_0_40px_-10px_rgba(255,214,10,0.3)] hover:border-[#FFD60A]/30 block">
+                {/* Electrifying sweep effect */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-[#FFD60A]/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000 ease-in-out pointer-events-none z-0" />
+                
+                <div className="md:w-1/4 text-xs sm:text-sm font-mono text-gray-500 group-hover:text-gray-300 transition-colors relative z-10">{win.displayDate}</div>
+                <div className="md:w-2/4 relative z-10">
+                  <h4 className="text-xl sm:text-2xl font-black tracking-tight group-hover:text-[#FFD60A] transition-colors text-stroke">{win.name}</h4>
+                  <p className="text-gray-400 mt-1 sm:mt-2 text-sm sm:text-base font-medium group-hover:text-gray-300 transition-colors">{win.location}</p>
+                </div>
+                <div className="md:w-1/4 flex items-center justify-start md:justify-end text-xs font-bold tracking-widest uppercase text-gray-500 group-hover:text-[#FFD60A] transition-colors relative z-10 mt-2 md:mt-0">
+                  <Trophy size={16} className="mr-2" /> {win.position}
+                </div>
+              </Link>
+            ))}
+          </div>
+          <div className="pt-8 flex justify-center">
+            <Link
+              href="/wins"
+              className="inline-flex items-center gap-3 px-8 py-3.5 rounded-full border border-[#FFD60A]/40 bg-zinc-950 text-[#FFD60A] font-mono text-xs font-bold uppercase tracking-widest hover:bg-[#FFD60A] hover:text-black transition-all hover:shadow-[0_0_30px_rgba(255,214,10,0.3)] cursor-pointer"
+            >
+              <span>ENTER HALL OF FAME — ALL VICTORIES</span>
+              <ArrowRight size={14} />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 8. EVENTS (Interactive Calendar & Mission Staging Deck) */}
+      <section id="events" className="py-20 sm:py-32 px-6 md:px-16">
+        <div className="flex items-end justify-between mb-8 sm:mb-12">
+          <div>
+            <span className="text-xs font-mono font-bold uppercase tracking-[0.3em] text-[#FFD60A] block mb-2">
+              RADAR // SCHEDULE
+            </span>
+            <h2 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter uppercase">Events</h2>
+          </div>
+          <Link href="/events" className="text-xs sm:text-sm font-bold tracking-widest hover:text-[#FFD60A] transition-colors flex items-center gap-2">
+            FULL ARCHIVE <ArrowRight size={16} />
+          </Link>
+        </div>
+
+        <div className="relative z-10">
+          <InteractiveEventCalendar initialEvents={eventsData} />
+        </div>
+      </section>
+
+      {/* 8. COMMUNITY MARQUEE */}
+      <section className="py-12 sm:py-20 border-y border-gray-800 bg-[#0a0a0a] overflow-hidden">
+        <div className="marquee-container">
+          <div className="marquee-content text-[5rem] sm:text-[8rem] md:text-[12rem] font-black tracking-tighter uppercase leading-none opacity-20">
+            BUILDERS DESIGNERS DEVELOPERS RESEARCHERS MAKERS THINKERS FOUNDERS COMPETITORS 
+          </div>
+        </div>
+      </section>
+
+      {/* 10. TEAM SECTION */}
+      <section id="team" className="py-20 sm:py-32 px-6 md:px-16 border-b border-gray-800 bg-[#050505] overflow-hidden">
+        <div className="flex flex-col mb-12 sm:mb-20 max-w-7xl mx-auto">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-black tracking-tighter uppercase mb-4">Core Team</h2>
+        </div>
+        
+        {/* FACULTY ADVISOR (BIG FEATURED CARD) */}
+        <div className="lead-section flex justify-center max-w-7xl mx-auto mb-20">
+          {teamData.filter(m => m.type === 'lead').map((member, i) => (
+            <div key={i} className="lead-character w-full max-w-xs sm:max-w-sm md:max-w-md mx-auto relative flex flex-col group cursor-pointer perspective-1000">
+              <div className="relative w-full aspect-[3/4] rounded-3xl overflow-hidden mb-6 bg-black shadow-[0_0_60px_rgba(255,214,10,0.15)] border border-[#FFD60A]/30 group-hover:border-[#FFD60A] transition-colors duration-500">
+                <img 
+                  src={member.image && member.image.trim() !== "" ? member.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=09090b&color=ffd60a&bold=true&size=512`} 
+                  alt={member.name} 
+                  className="lead-img absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-[2s]" 
+                  onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=09090b&color=ffd60a&bold=true&size=512`; }}
+                />
+                <div className="curtain absolute inset-0 bg-[#050505] z-10 pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10 pointer-events-none" />
+                
+                <div className="absolute bottom-6 left-6 right-6 z-20 text-center">
+                  <div className="overflow-hidden mb-2 inline-block">
+                    <span className="insane-pos text-[#FFD60A] text-xs font-mono font-black tracking-[0.3em] uppercase px-3.5 py-1 rounded-full bg-[#FFD60A]/10 border border-[#FFD60A]/30 inline-block">
+                      {member.position}
+                    </span>
+                  </div>
+                  
+                  <h3 className="text-3xl sm:text-4xl font-black tracking-tighter text-white drop-shadow-[0_2px_12px_rgba(0,0,0,1)] flex justify-center flex-wrap" style={{ perspective: 400 }}>
+                    {member.name.split('').map((char, index) => (
+                      <span key={index} className="insane-char inline-block" style={{ whiteSpace: char === ' ' ? 'pre' : 'normal' }}>
+                        {char}
+                      </span>
+                    ))}
+                  </h3>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* STUDENT TEAM CARDS PADLET (NON-HIERARCHICAL NORMAL LANE) */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 sm:gap-6 max-w-7xl mx-auto">
+          {teamData.filter(m => m.type === 'normal').map((member, i) => (
+            <div key={i} className="team-member flex flex-col group cursor-pointer">
+              <div className="relative w-full aspect-[4/5] rounded-2xl overflow-hidden mb-4 border border-gray-800 group-hover:border-[#FFD60A]/50 transition-all duration-300 bg-black group-hover:shadow-[0_0_25px_rgba(255,214,10,0.15)]">
+                <img 
+                  src={member.image && member.image.trim() !== "" ? member.image : `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=09090b&color=ffd60a&bold=true&size=512`} 
+                  alt={member.name} 
+                  className="team-drone-shot absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-500" 
+                  onError={(e) => { e.currentTarget.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}&background=09090b&color=ffd60a&bold=true&size=512`; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent z-10" />
+              </div>
+              <h3 className="text-base sm:text-lg font-black tracking-tighter text-white group-hover:text-[#FFD60A] transition-colors">{member.name}</h3>
+              <p className="text-[10px] font-bold tracking-widest text-gray-500 uppercase mt-1">{member.position}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 11. FOOTER CTA */}
+      <section className="min-h-[80vh] sm:min-h-screen flex flex-col items-center justify-center px-6 py-20 text-center bg-black">
+        <h2 className="text-5xl sm:text-7xl md:text-9xl font-black tracking-tighter text-[#FFD60A] mb-8 sm:mb-12">
+          READY TO<br/>COMPETE?
+        </h2>
+        
+        <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full sm:w-auto max-w-xs sm:max-w-none">
+          <Link href="#opportunities" className="w-full sm:w-auto">
+            <button className="bg-white text-black px-8 sm:px-12 py-4 sm:py-5 text-sm font-bold tracking-widest hover:bg-[#FFD60A] transition-all w-full sm:w-auto">
+              VIEW OPPORTUNITIES
+            </button>
+          </Link>
+          <Link href="#events" className="w-full sm:w-auto">
+            <button className="bg-transparent border border-white text-white px-8 sm:px-12 py-4 sm:py-5 text-sm font-bold tracking-widest hover:bg-white hover:text-black transition-all w-full sm:w-auto">
+              EXPLORE EVENTS
+            </button>
+          </Link>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="py-12 px-6 md:px-16 border-t border-gray-900 flex flex-col gap-12">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-8 text-xs font-bold tracking-widest text-gray-500 uppercase">
+          <div>
+            <span className="text-white text-lg block mb-2">INVICTUS</span>
+            <span className="font-normal text-gray-600 lowercase tracking-normal">Learn, build, compete and grow together.</span>
+          </div>
+          <div className="flex flex-wrap gap-4 sm:gap-6 items-center">
+            <Link href="/wins" className="text-[#FFD60A] hover:underline font-bold transition">Hall of Fame</Link>
+            <a href="https://chat.whatsapp.com/EKzm2FVmGWr6nOSf66MdQz" target="_blank" rel="noreferrer" className="hover:text-white transition">WhatsApp</a>
+            <a href="https://www.linkedin.com/company/your-page" target="_blank" rel="noreferrer" className="hover:text-white transition">LinkedIn</a>
+            <a href="https://www.instagram.com/vtu.invictus" target="_blank" rel="noreferrer" className="hover:text-white transition">Instagram</a>
+            <a href="https://www.youtube.com/channel/UC6be4wheRoTs2ghdgjznVzA" target="_blank" rel="noreferrer" className="hover:text-white transition">YouTube</a>
+            <a href="mailto:yashkopardevtu@gmail.com" className="hover:text-white transition">Email</a>
+          </div>
+        </div>
+        
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-900/50 text-[10px] font-bold tracking-widest text-gray-600 uppercase">
+          <div>
+            Designed and developed by <a href="https://yashkopardevtu.vercel.app" target="_blank" rel="noreferrer" className="text-white hover:text-[#FFD60A] transition-colors">Yash Koparde</a>
+          </div>
+          <div className="flex flex-wrap gap-4 sm:gap-6">
+            <a href="https://github.com/yashkoparde" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">GitHub</a>
+            <a href="https://yashkopardevtu.vercel.app" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Portfolio</a>
+            <a href="https://yk-projects.vercel.app/" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">Projects</a>
+          </div>
+        </div>
+      </footer>
+      
+    </main>
+  );
+}
+
+// Simple internal icon for trophy
+function Trophy({ size = 24, ...props }: React.SVGProps<SVGSVGElement> & { size?: number }) {
+  return (
+    <svg {...props} xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/>
+      <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/>
+      <path d="M4 22h16"/>
+      <path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/>
+      <path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/>
+      <path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/>
+    </svg>
+  )
+}
+
+function AnimatedText({ text }: { text: string }) {
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) {
+    return <span style={{ opacity: 0 }}>{text}</span>;
+  }
+
+  return (
+    <motion.div
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: "-100px" }}
+      suppressHydrationWarning
+      variants={{
+        hidden: { opacity: 0 },
+        visible: {
+          opacity: 1,
+          transition: { staggerChildren: 0.03 }
+        }
+      }}
+    >
+      {text.split("").map((char, index) => {
+        // pseudo random based on index
+        const randX = (Math.sin(index * 12.3) * 300);
+        const randY = (Math.cos(index * 45.6) * 300);
+        const randRotate = (Math.sin(index * 78.9) * 180);
+        return (
+        <motion.span
+          key={index}
+          variants={{
+            hidden: { opacity: 0, x: randX, y: randY, rotate: randRotate, scale: 0 },
+            visible: { opacity: 1, x: 0, y: 0, rotate: 0, scale: 1, transition: { type: "spring", damping: 15, stiffness: 100 } }
+          }}
+          style={{ display: "inline-block", whiteSpace: char === " " ? "pre" : "normal", opacity: 0 }}
+        >
+          {char}
+        </motion.span>
+      )})}
+    </motion.div>
+  )
+}
