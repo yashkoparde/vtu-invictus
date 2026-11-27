@@ -399,19 +399,22 @@ export default function PremiumInvictus() {
     { name: "Mrs. Chaitrali Mam", position: "Faculty Advisor", image: "/team/chaitrali-mam.jpg", type: "lead" },
     { name: "Yash Koparde", position: "President", image: "/team/yash-koparde.jpeg", type: "normal" },
     { name: "Rahul Shirol", position: "Vice President", image: "/team/rahul-shirol.png", type: "normal" },
-    { name: "Preetam Malawade", position: "General Secretary", image: "", type: "normal" },
-    { name: "Pratik", position: "Event Lead", image: "/team/pratik.jpg", type: "normal" },
+    { name: "Preetam Malawade", position: "General Secretary", image: "/team/preetam-malawade.jpg", type: "normal" },
+    { name: "Pratik", position: "Event Lead", image: "/team/pratik.png", type: "normal" },
     { name: "Shruti Hugar", position: "Event Lead", image: "", type: "normal" },
     { name: "Melwin Fernandes", position: "Tech Lead", image: "/team/melwin-fernandes.jpg", type: "normal" },
-    { name: "Aditya Patange", position: "Tech Lead", image: "", type: "normal" },
-    { name: "Shreesha Desai", position: "Hardware Lead", image: "", type: "normal" },
+    { name: "Aditya Patange", position: "Tech Lead", image: "/team/aditya-patange.jpg", type: "normal" },
+    { name: "Shreesha Desai", position: "Hardware Lead", image: "/team/shreesha-desai.png", type: "normal" },
     { name: "Sagar Hulikavi", position: "Event Operations", image: "/team/sagar-hulikavi.jpg", type: "normal" },
-    { name: "Nandita Salunke", position: "Event Operations", image: "", type: "normal" },
+    { name: "Nandita Salunke", position: "Event Operations", image: "/team/nandita-salunke.png", type: "normal" },
     { name: "Advika Gurav", position: "Female Lead", image: "/team/advika-gurav.jpg", type: "normal" },
     { name: "Nandita Bhajantri", position: "PR Outreach", image: "", type: "normal" },
     { name: "Laxmikanth J", position: "Cinematography", image: "/team/laxmikanth-j.jpg", type: "normal" },
-    { name: "Rashmi", position: "Core Team", image: "", type: "normal" },
-    { name: "Suvarna", position: "Core Team", image: "", type: "normal" }
+    { name: "Rashmi", position: "Core Team", image: "/team/rashmi.jpg", type: "normal" },
+    { name: "Suvarna", position: "Core Team", image: "/team/suvarna-basanakatti.png", type: "normal" },
+    { name: "Harsha Oulkar", position: "Core Team", image: "/team/harsha-oulkar.jpg", type: "normal" },
+    { name: "Ravikumar Pujari", position: "Core Team", image: "/team/ravikumar-pujari.png", type: "normal" },
+    { name: "Rehan", position: "Core Team", image: "/team/rehan.jpg", type: "normal" }
   ];
 
   return (
