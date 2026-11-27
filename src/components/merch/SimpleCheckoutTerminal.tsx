@@ -115,7 +115,7 @@ export function SimpleCheckoutTerminal({
           </div>
 
           <a
-            href="https://forms.gle/InvictusMembership2026"
+            href="https://forms.gle/CnWWcHbBp1VN2i6m6"
             target="_blank"
             rel="noopener noreferrer"
             className="relative z-10 px-8 py-4 rounded-2xl btn-metallic-gold text-sm font-mono font-black uppercase tracking-wider whitespace-nowrap cursor-pointer shrink-0"
