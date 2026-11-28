@@ -86,6 +86,7 @@ function Navbar() {
           <Link href="#opportunities" className="hover:text-[#FFD60A] transition-colors">OPPORTUNITIES</Link>
           <Link href="#events" className="hover:text-[#FFD60A] transition-colors">EVENTS</Link>
           <Link href="/wins" className="hover:text-[#FFD60A] transition-colors">ACHIEVEMENTS</Link>
+          <Link href="#team" className="hover:text-[#FFD60A] transition-colors">TEAM</Link>
           <Link href="/merch" className="hover:text-[#FFD60A] transition-colors flex items-center gap-1.5 font-bold">
             <span className="w-1.5 h-1.5 rounded-full bg-[#FFD60A] animate-pulse"></span>
             MERCH
@@ -135,6 +136,13 @@ function Navbar() {
             >
               <span>ACHIEVEMENTS</span>
               <span className="text-[10px] bg-white/10 text-zinc-300 px-2 py-0.5 rounded-full border border-white/20 font-mono">HALL OF FAME</span>
+            </Link>
+            <Link 
+              href="#team" 
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 border-b border-gray-900 hover:text-[#FFD60A] transition-colors"
+            >
+              TEAM
             </Link>
             <Link 
               href="/merch" 
@@ -401,7 +409,7 @@ export default function PremiumInvictus() {
   // TEAM DATA (Store images in public/team/)
   // ----------------------------------------------------
   const teamData = [
-    { name: "Mrs. Chaitrali Mam", position: "Faculty Advisor", image: "/team/chaitrali-mam.jpg", type: "lead" },
+    { name: "Mrs. Chaitrali Bhandare", position: "Faculty Advisor", image: "/team/chaitrali-mam.jpg", type: "lead" },
     { name: "Yash Koparde", position: "President", image: "/team/yash-koparde.jpeg", type: "normal" },
     { name: "Rahul Shirol", position: "Vice President", image: "/team/rahul-shirol.png", type: "normal" },
     { name: "Advika Gurav", position: "Female Lead", image: "/team/advika-gurav.jpg", type: "normal" },
@@ -413,7 +421,7 @@ export default function PremiumInvictus() {
     { name: "Shreesha Desai", position: "Hardware Lead", image: "/team/shreesha-desai.jpg", type: "normal" },
     { name: "Sagar Hulikavi", position: "Event Operations", image: "/team/sagar-hulikavi.jpg", type: "normal" },
     { name: "Nandita Salunke", position: "Event Operations", image: "/team/nandita-salunke.jpg", type: "normal" },
-    { name: "Nandita Bhajantri", position: "PR Outreach", image: "", type: "normal" },
+    { name: "Nandita Bhajantri", position: "PR Outreach", image: "/team/nandita-bhajantri.jpeg", type: "normal" },
     { name: "Laxmikanth J", position: "Cinematography", image: "/team/laxmikanth.jpg", type: "normal" },
     { name: "Rashmi", position: "Core Team", image: "/team/rashmi.jpg", type: "normal" },
     { name: "Suvarna", position: "Core Team", image: "/team/suvarna.jpg", type: "normal" },
@@ -870,7 +878,7 @@ export default function PremiumInvictus() {
         
         <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t border-gray-900/50 text-[10px] font-bold tracking-widest text-gray-600 uppercase">
           <div>
-            Designed and developed by <a href="https://yashkopardevtu.vercel.app" target="_blank" rel="noreferrer" className="text-white hover:text-[#FFD60A] transition-colors">Yash Koparde</a>
+            Developed by Invictus Club. Developer: <a href="https://yashkoparde.vercel.app" target="_blank" rel="noreferrer" className="text-white hover:text-[#FFD60A] transition-colors">Yash Koparde</a>. © VTU Students&apos; Club, 2026 Inc.
           </div>
           <div className="flex flex-wrap gap-4 sm:gap-6">
             <a href="https://github.com/yashkoparde" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">GitHub</a>
